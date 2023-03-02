@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common/enums';
 import { ParseUUIDPipe } from '@nestjs/common/pipes';
+import { CreateTodoDto } from './dto/create-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 import { TodoService } from './todo.service';
 
 @Controller('api/v1/todo')
@@ -22,7 +24,7 @@ export class TodoController {
   }
 
   @Post()
-  async create(@Body() body) {
+  async create(@Body() body: CreateTodoDto) {
     return await this.todoService.createAsync(body);
   }
 
@@ -32,7 +34,10 @@ export class TodoController {
   }
 
   @Put(':id')
-  async update(@Param('id', new ParseUUIDPipe()) id: string, @Body() body) {
+  async update(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() body: UpdateTodoDto,
+  ) {
     return await this.todoService.updateAsync(id, body);
   }
 
