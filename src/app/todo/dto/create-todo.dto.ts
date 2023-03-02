@@ -5,6 +5,6 @@ export class CreateTodoDto {
   task: string;
 
   @IsNotEmpty()
-  @IsIn(0, 1)
+  @IsIn([0, 1])
   isDone: number;
 }
