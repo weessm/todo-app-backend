@@ -41,7 +41,7 @@ export class TodoController {
     return await this.todoService.updateAsync(id, body);
   }
 
-  @Delete()
+  @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async destroy(@Param('id', new ParseUUIDPipe()) id: string) {
     await this.todoService.deleteByIdAsync(id);
