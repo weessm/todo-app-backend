@@ -85,4 +85,23 @@ describe('TodoController', () => {
       expect(todoController.create(body)).rejects.toThrowError();
     });
   });
+
+  describe('show', () => {
+    it('should get a todo item successfully', async () => {
+      const result = await todoController.show('1');
+
+      expect(result).toEqual(todoEntityList[0]);
+      expect(todoService.findOneOrFailAsync).toHaveBeenCalledTimes(1);
+      expect(todoService.findOneOrFailAsync).toHaveBeenCalledWith('1');
+      expect(typeof result).toEqual('object');
+    });
+
+    it('should throw an exception', () => {
+      jest
+        .spyOn(todoService, 'findOneOrFailAsync')
+        .mockRejectedValueOnce(new Error());
+
+      expect(todoController.show('1')).rejects.toThrowError();
+    });
+  });
 });
