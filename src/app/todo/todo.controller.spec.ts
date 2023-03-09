@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CreateTodoDto } from './dto/create-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
 import { TodoEntity } from './entity/todo.entity';
 import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
@@ -9,6 +10,8 @@ const todoEntityList: TodoEntity[] = [
   new TodoEntity({ id: '2', task: 'task-2', isDone: 0 }),
   new TodoEntity({ id: '3', task: 'task-3', isDone: 1 }),
 ];
+
+const updatedTodoEntity = new TodoEntity({ task: 'task-1', isDone: 0 });
 
 const newTodoEntity = new TodoEntity({ task: 'new-task', isDone: 0 });
 
@@ -26,7 +29,7 @@ describe('TodoController', () => {
             findAllAsync: jest.fn().mockResolvedValue(todoEntityList),
             createAsync: jest.fn().mockResolvedValue(newTodoEntity),
             findOneOrFailAsync: jest.fn().mockResolvedValue(todoEntityList[0]),
-            updateAsync: jest.fn(),
+            updateAsync: jest.fn().mockResolvedValue(updatedTodoEntity),
             deleteByIdAsync: jest.fn(),
           },
         },
@@ -102,6 +105,33 @@ describe('TodoController', () => {
         .mockRejectedValueOnce(new Error());
 
       expect(todoController.show('1')).rejects.toThrowError();
+    });
+  });
+
+  describe('update', () => {
+    it('should update a todo item successfully', async () => {
+      const body: UpdateTodoDto = {
+        task: 'task-1',
+        isDone: 0,
+      };
+
+      const result = await todoController.update('1', body);
+
+      expect(result).toEqual(updatedTodoEntity);
+      expect(todoService.updateAsync).toHaveBeenCalledTimes(1);
+      expect(todoService.updateAsync).toHaveBeenCalledWith('1', body);
+      expect(typeof result).toEqual('object');
+    });
+
+    it('should throw an exception', () => {
+      const body: UpdateTodoDto = {
+        task: 'task-1',
+        isDone: 0,
+      };
+
+      jest.spyOn(todoService, 'updateAsync').mockRejectedValueOnce(new Error());
+
+      expect(todoController.update('1', body)).rejects.toThrowError();
     });
   });
 });
