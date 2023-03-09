@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { CreateTodoDto } from './dto/create-todo.dto';
 import { TodoEntity } from './entity/todo.entity';
 import { TodoController } from './todo.controller';
 import { TodoService } from './todo.service';
@@ -8,6 +9,8 @@ const todoEntityList: TodoEntity[] = [
   new TodoEntity({ id: '2', task: 'task-2', isDone: 0 }),
   new TodoEntity({ id: '3', task: 'task-3', isDone: 1 }),
 ];
+
+const newTodoEntity = new TodoEntity({ task: 'new-task', isDone: 0 });
 
 describe('TodoController', () => {
   let todoController: TodoController;
@@ -21,8 +24,8 @@ describe('TodoController', () => {
           provide: TodoService,
           useValue: {
             findAllAsync: jest.fn().mockResolvedValue(todoEntityList),
-            createAsync: jest.fn(),
-            findOneOrFailAsync: jest.fn(),
+            createAsync: jest.fn().mockResolvedValue(newTodoEntity),
+            findOneOrFailAsync: jest.fn().mockResolvedValue(todoEntityList[0]),
             updateAsync: jest.fn(),
             deleteByIdAsync: jest.fn(),
           },
@@ -54,6 +57,32 @@ describe('TodoController', () => {
         .mockRejectedValueOnce(new Error());
 
       expect(todoController.index()).rejects.toThrowError();
+    });
+  });
+
+  describe('create', () => {
+    it('should create a new todo item successfully', async () => {
+      const body: CreateTodoDto = {
+        task: 'new-task',
+        isDone: 0,
+      };
+
+      const result = await todoController.create(body);
+
+      expect(result).toEqual(newTodoEntity);
+      expect(todoService.createAsync).toHaveBeenCalledTimes(1);
+      expect(todoService.createAsync).toHaveBeenCalledWith(body);
+    });
+
+    it('should throw an exception', () => {
+      const body: CreateTodoDto = {
+        task: 'new-task',
+        isDone: 0,
+      };
+
+      jest.spyOn(todoService, 'createAsync').mockRejectedValueOnce(new Error());
+
+      expect(todoController.create(body)).rejects.toThrowError();
     });
   });
 });
